@@ -9,8 +9,7 @@ const ASSETS = [
   'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js',
   'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js',
   'https://unpkg.com/@babel/standalone/babel.min.js',
-  './icon-192.png',
-  './icon-512.png'
+  './icon.svg'
 ];
 
 self.addEventListener('install', (event) => {
