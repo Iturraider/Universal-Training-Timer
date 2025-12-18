@@ -615,6 +615,33 @@
             const [selectedMode, setSelectedMode] = useState(null);
             const [timerConfig, setTimerConfig] = useState(null);
             const [isDarkMode, setIsDarkMode] = useState(true);
+            const [deferredPrompt, setDeferredPrompt] = useState(null);
+
+            useEffect(() => {
+                const handleBeforeInstallPrompt = (e) => {
+                    // Prevenir que Chrome muestre el prompt automáticamente
+                    e.preventDefault();
+                    // Guardar el evento para dispararlo después
+                    setDeferredPrompt(e);
+                };
+
+                window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+                return () => {
+                    window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+                };
+            }, []);
+
+            const handleInstallClick = async () => {
+                if (!deferredPrompt) return;
+                // Mostrar el prompt
+                deferredPrompt.prompt();
+                // Esperar a que el usuario responda
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`User response to the install prompt: ${outcome}`);
+                // Limpiar el prompt guardado
+                setDeferredPrompt(null);
+            };
 
             const handleSelectMode = (mode) => {
                 setSelectedMode(mode);
@@ -669,6 +696,15 @@
                                 >
                                     {isDarkMode ? <SunIcon /> : <MoonIcon />}
                                 </button>
+                                {deferredPrompt && (
+                                    <button
+                                        onClick={handleInstallClick}
+                                        className={`ml-2 p-3 rounded-2xl border transition-all font-bold text-sm uppercase ${isDarkMode ? 'bg-blue-600 border-blue-500 text-white' : 'bg-blue-600 border-blue-500 text-white shadow-sm'
+                                            }`}
+                                    >
+                                        Instalar
+                                    </button>
+                                )}
                             </header>
 
                             <div className="flex-1">
