@@ -7,7 +7,8 @@ const ASSETS = [
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap',
   'https://unpkg.com/react@18/umd/react.production.min.js',
   'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js',
-  'https://unpkg.com/@babel/standalone/babel.min.js'
+  'https://unpkg.com/@babel/standalone/babel.min.js',
+  './icon.svg'
 ];
 
 self.addEventListener('install', (event) => {

@@ -15,10 +15,8 @@
     <meta name="apple-mobile-web-app-title" content="UniTimer">
 
     <!-- Icons -->
-    <link rel="icon" type="image/svg+xml"
-        href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0OCIgZmlsbD0iIzBmMTcyYSIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iNjAiIHI9IjMwIiBmaWxsPSJub25lIiBzdHJva2U9IiMzYjgyZjYiIHN0cm9rZS13aWR0aD0iOCIvPjxwYXRoIGQ9Ik01MCAzMHYxME01MCA2MGwyMC0yMCIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==">
-    <link rel="apple-touch-icon"
-        href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjEyOCIgZmlsbD0iIzBmMTcyYSIvPjxjaXJjbGUgY3g9IjI1NiIgY3k9IjI4MCIgcj0iMTYwIiBmaWxsPSJub25lIiBzdHJva2U9IiMzYjgyZjYiIHN0cm9rZS13aWR0aD0iNDAiLz48cGF0aCBkPSJNMjU2IDEyMHY0ME0yNTYgNDAwdjQwTTQwMCAyODBoLTQwTTI0MCAyODBoLTgwIiBzdHJva2U9IiMzYjgyZjYiIHN0cm9rZS13aWR0aD0iNDAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik0yNTYgMjgwbDgwLTgwIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xOTIgODB2NDBoMTI4VjgwSDI1NnoiIGZpbGw9IiMzYjgyZjYiLz48L3N2Zz4=">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <link rel="apple-touch-icon" href="icon.svg">
 
     <!-- CDNs for React, Babel, and Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -432,8 +430,42 @@
             const [isCompleted, setIsCompleted] = useState(false);
 
             const timerRef = useRef(null);
+            const wakeLockRef = useRef(null);
 
             const currentSegment = segments[currentSegmentIndex];
+
+            // Wake Lock Effect
+            useEffect(() => {
+                const requestWakeLock = async () => {
+                    if ('wakeLock' in navigator) {
+                        try {
+                            wakeLockRef.current = await navigator.wakeLock.request('screen');
+                        } catch (err) {
+                            console.log('Wake Lock denied:', err);
+                        }
+                    }
+                };
+
+                if (isActive && !isCompleted) {
+                    requestWakeLock();
+                }
+
+                const handleVisibilityChange = () => {
+                    if (document.visibilityState === 'visible' && isActive && !isCompleted) {
+                        requestWakeLock();
+                    }
+                };
+
+                document.addEventListener('visibilitychange', handleVisibilityChange);
+
+                return () => {
+                    document.removeEventListener('visibilitychange', handleVisibilityChange);
+                    if (wakeLockRef.current) {
+                        wakeLockRef.current.release();
+                        wakeLockRef.current = null;
+                    }
+                };
+            }, [isActive, isCompleted]);
 
             const handleNextSegment = useCallback(() => {
                 if (currentSegmentIndex < segments.length - 1) {
@@ -604,8 +636,8 @@
                 <button
                     onClick={() => handleSelectMode(mode)}
                     className={`w-full mb-4 p-6 rounded-3xl flex flex-col items-start text-left transition-all active:scale-95 relative overflow-hidden group border ${isDarkMode
-                            ? `bg-slate-900 border-slate-800 text-white ${colorClass}`
-                            : `bg-white border-slate-200 text-slate-900 shadow-sm ${colorClass.replace('hover:border-', 'hover:border-')}`
+                        ? `bg-slate-900 border-slate-800 text-white ${colorClass}`
+                        : `bg-white border-slate-200 text-slate-900 shadow-sm ${colorClass.replace('hover:border-', 'hover:border-')}`
                         }`}
                 >
                     <div className="relative z-10">
